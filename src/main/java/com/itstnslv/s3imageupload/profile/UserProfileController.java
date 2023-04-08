@@ -1,8 +1,8 @@
 package com.itstnslv.s3imageupload.profile;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,4 +20,16 @@ public class UserProfileController {
     public List<UserProfile> getUserProfiles() {
         return userProfileService.getUserProfiles();
     }
+
+    @PostMapping(
+            path = "{userProfileId}/image/upload",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public void uploadProfileImage(@PathVariable("userProfileId") String userProfileId,
+                                   @RequestParam("file") MultipartFile file) {
+        userProfileService.uploadProfileImage(userProfileId, file);
+    }
+
+
 }
