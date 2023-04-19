@@ -8,6 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/user-profiles")
+@CrossOrigin("*")
 public class UserProfileController {
 
     private final UserProfileService userProfileService;
