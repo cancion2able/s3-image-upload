@@ -28,15 +28,10 @@ public class UserProfileService {
     }
 
     public void uploadProfileImage(String userProfileId, MultipartFile file) {
-        if (file.isEmpty()) {
-            throw new IllegalStateException("The file is empty.");
-        }
-        if (!Arrays.asList(IMAGE_JPEG.toString(), IMAGE_PNG.toString()).contains(file.getContentType())) {
-            throw new IllegalStateException("The file is not an image.");
-        }
+        isFileEmpty(file);
+        isImage(file);
         if (dataStore.userExists(UUID.fromString(userProfileId))) {
-            Map<String, String> metadata = Map.of("Content-Type", file.getContentType(),
-                    "Content-Length", String.valueOf(file.getSize()));
+            Map<String, String> metadata = constructMetadata(file);
             final String path = String.format("%s/%s", BucketName.PROFILE_IMAGE.getBucketName(), userProfileId);
             final String fileName = String.format("%s-%s", file.getOriginalFilename(), UUID.randomUUID());
             try {
@@ -44,6 +39,23 @@ public class UserProfileService {
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }
+        }
+    }
+
+    private static Map<String, String> constructMetadata(MultipartFile file) {
+        return Map.of("Content-Type", file.getContentType(),
+                "Content-Length", String.valueOf(file.getSize()));
+    }
+
+    private static void isImage(MultipartFile file) {
+        if (!Arrays.asList(IMAGE_JPEG.toString(), IMAGE_PNG.toString()).contains(file.getContentType())) {
+            throw new IllegalStateException("The file is not an image.");
+        }
+    }
+
+    private static void isFileEmpty(MultipartFile file) {
+        if (file.isEmpty()) {
+            throw new IllegalStateException("The file is empty.");
         }
     }
 }
