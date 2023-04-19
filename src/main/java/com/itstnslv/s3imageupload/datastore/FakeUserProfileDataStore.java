@@ -20,4 +20,9 @@ public class FakeUserProfileDataStore {
     public List<UserProfile> getUserProfiles() {
         return USER_PROFILES;
     }
+
+    public boolean userExists(UUID userProfileId) {
+        return USER_PROFILES.stream()
+                .anyMatch(userProfile -> userProfile.getUserProfileId().equals(userProfileId));
+    }
 }

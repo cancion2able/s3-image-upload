@@ -1,18 +1,26 @@
 package com.itstnslv.s3imageupload.profile;
 
+import com.itstnslv.s3imageupload.bucket.BucketName;
 import com.itstnslv.s3imageupload.datastore.FakeUserProfileDataStore;
+import com.itstnslv.s3imageupload.filestore.FileStore;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
+
+import static org.apache.http.entity.ContentType.IMAGE_JPEG;
+import static org.apache.http.entity.ContentType.IMAGE_PNG;
 
 @Service
 public class UserProfileService {
 
     private final FakeUserProfileDataStore dataStore;
+    private final FileStore fileStore;
 
-    public UserProfileService(FakeUserProfileDataStore dataStore) {
+    public UserProfileService(FakeUserProfileDataStore dataStore, FileStore fileStore) {
         this.dataStore = dataStore;
+        this.fileStore = fileStore;
     }
 
     public List<UserProfile> getUserProfiles() {
@@ -20,6 +28,22 @@ public class UserProfileService {
     }
 
     public void uploadProfileImage(String userProfileId, MultipartFile file) {
-
+        if (file.isEmpty()) {
+            throw new IllegalStateException("The file is empty.");
+        }
+        if (!Arrays.asList(IMAGE_JPEG.toString(), IMAGE_PNG.toString()).contains(file.getContentType())) {
+            throw new IllegalStateException("The file is not an image.");
+        }
+        if (dataStore.userExists(UUID.fromString(userProfileId))) {
+            Map<String, String> metadata = Map.of("Content-Type", file.getContentType(),
+                    "Content-Length", String.valueOf(file.getSize()));
+            final String path = String.format("%s/%s", BucketName.PROFILE_IMAGE.getBucketName(), userProfileId);
+            final String fileName = String.format("%s-%s", file.getOriginalFilename(), UUID.randomUUID());
+            try {
+                fileStore.save(path, fileName, Optional.of(metadata), file.getInputStream());
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        }
     }
 }
