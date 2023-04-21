@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/user-profiles")
@@ -27,10 +28,13 @@ public class UserProfileController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public void uploadProfileImage(@PathVariable("userProfileId") String userProfileId,
+    public void uploadProfileImage(@PathVariable("userProfileId") UUID userProfileId,
                                    @RequestParam("file") MultipartFile file) {
         userProfileService.uploadProfileImage(userProfileId, file);
     }
 
-
+    @GetMapping("{userProfileId}/image/download")
+    public byte[] downloadProfileImage(@PathVariable("userProfileId") UUID userProfileId) {
+        return userProfileService.downloadProfileImage(userProfileId);
+    }
 }

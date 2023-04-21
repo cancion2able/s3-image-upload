@@ -27,10 +27,10 @@ public class UserProfileService {
         return dataStore.getUserProfiles();
     }
 
-    public void uploadProfileImage(String userProfileId, MultipartFile file) {
+    public void uploadProfileImage(UUID userProfileId, MultipartFile file) {
         isFileEmpty(file);
         isImage(file);
-        UserProfile user = dataStore.retrieveUserBy(UUID.fromString(userProfileId));
+        UserProfile user = dataStore.retrieveUserBy(userProfileId);
         if (Objects.nonNull(user)) {
             Map<String, String> metadata = constructMetadata(file);
             final String path = String.format("%s/%s", BucketName.PROFILE_IMAGE.getBucketName(), userProfileId);
@@ -59,5 +59,13 @@ public class UserProfileService {
         if (file.isEmpty()) {
             throw new IllegalStateException("The file is empty.");
         }
+    }
+
+    public byte[] downloadProfileImage(UUID userProfileId) {
+        final String path = String.format("%s/%s", BucketName.PROFILE_IMAGE.getBucketName(), userProfileId);
+        return dataStore.retrieveUserBy(userProfileId)
+                .getUserProfileImageLink()
+                .map(key -> fileStore.download(path, key))
+                .orElse(new byte[0]);
     }
 }
