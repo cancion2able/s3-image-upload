@@ -30,14 +30,13 @@ public class UserProfileService {
     public void uploadProfileImage(String userProfileId, MultipartFile file) {
         isFileEmpty(file);
         isImage(file);
-        Optional<UserProfile> optionalUser = dataStore.retrieveUserBy(UUID.fromString(userProfileId));
-        if (optionalUser.isPresent()) {
+        UserProfile user = dataStore.retrieveUserBy(UUID.fromString(userProfileId));
+        if (Objects.nonNull(user)) {
             Map<String, String> metadata = constructMetadata(file);
             final String path = String.format("%s/%s", BucketName.PROFILE_IMAGE.getBucketName(), userProfileId);
             final String fileName = String.format("%s-%s", file.getOriginalFilename(), UUID.randomUUID());
             try {
                 fileStore.save(path, fileName, Optional.of(metadata), file.getInputStream());
-                UserProfile user = optionalUser.get();
                 user.setUserProfileImageLink(fileName);
             } catch (IOException e) {
                 throw new IllegalStateException(e);

@@ -22,9 +22,10 @@ public class FakeUserProfileDataStore {
         return USER_PROFILES;
     }
 
-    public Optional<UserProfile> retrieveUserBy(UUID userProfileId) {
+    public UserProfile retrieveUserBy(UUID userProfileId) {
         return USER_PROFILES.stream()
                 .filter(userProfile -> userProfile.getUserProfileId().equals(userProfileId))
-                .findAny();
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("No such user exists in the database"));
     }
 }
